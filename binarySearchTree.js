@@ -1,6 +1,6 @@
 /*
 To-do:
-- Delete function
+- 
 - Find function
 - Level Order
 - preorder, inorder, postorder traversal
@@ -55,41 +55,36 @@ class Tree {
     return node;
   }
 
-  delete(value, node = this.root) {
-    if (node == null) return null;
-    // If the value is found
-    if (value == node.data) {
-      // Has no sub-trees
-      if (node.right == null && node.left == null) return null;
-      // Has two sub-trees
-      else if (node.right != null && node.left != null) {
-        // In order traverse function
-        function traverse(root, array = []) {
-          if (root == null) return null;
-          traverse(root.left, array);
-          array.push(root.data);
-          traverse(root.right, array);
-          return array;
-        }
-        let traversalArray = traverse(node);
-        let successor;
-        // Find nearest value inside the array
-        for (let i = 0; i < traversalArray.length; i++) {
-          if (traversalArray[i] < value) continue;
-          if (traversalArray[i] == value) successor = traversalArray[i + 1];
-        }
-        this.delete(successor);
-        node.data = successor;
-      }
-      // Has a single right sub-tree
-      else if (node.right != null) node = node.right;
-      // Has a single left sub-tree
-      else if (node.left != null) node = node.left;
-    }
+  delete(value, root = this.root) {
+    if (root == null) return root;
 
-    if (value < node.data) node.left = this.delete(value, node.left);
-    if (value > node.data) node.right = this.delete(value, node.right);
-    return node;
+    // If value is below current node's data, recurse either to the right or left
+    if (value < root.data) root.left = this.delete(value, root.left);
+    else if (value > root.data) root.right = this.delete(value, root.right);
+    else {
+      // If single branches found, return that branch
+      if (root.left == null) return root.right;
+      else if (root.right == null) return root.left;
+
+      // Go to the right sub tree, traverse down the left side of that
+      // until you reach the end (successor value)
+      root.data = this.minValue(root.right);
+
+      // Traverse the right subtree of the found node, this time
+      // set the value to be deleted as the successor value
+      root.right = this.delete(root.data, root.right);
+    }
+    return root;
+  }
+
+  // The successor value is always in the right-side branch, then as far left as you can go
+  minValue(root) {
+    let minv = root.data;
+    while (root.left != null) {
+      minv = root.left.data;
+      root = root.left;
+    }
+    return minv;
   }
 
   print() {
@@ -102,6 +97,7 @@ const unsortedArray = [
 ];
 const tree = new Tree(unsortedArray);
 tree.buildTree();
+// tree.delete(39);
 tree.print();
 
 //
