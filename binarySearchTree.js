@@ -1,3 +1,15 @@
+/*
+To-do:
+- Delete function
+- Find function
+- Level Order
+- preorder, inorder, postorder traversal
+- Height Function
+- Depth
+- isBalance
+- reBalance
+*/
+
 class Node {
   constructor(data) {
     this.data = data;
@@ -13,7 +25,7 @@ class Tree {
   }
 
   cleanArray(array) {
-    return [...new Set(sort(array))];
+    return [...new Set(mergeSort(array))];
   }
 
   arrayToBST(arr, start, end) {
@@ -32,26 +44,65 @@ class Tree {
     this.root = this.arrayToBST(this.array, 0, this.array.length - 1);
   }
 
-  insert(value) {}
-
-  delete(value) {
-    // Will have to deal with caes such as when
-    // a node has children or not
+  insert(value, node = this.root) {
+    if (node == null) return new Node(value);
+    if (node.data == value)
+      return console.log("Number already in use. No duplicates please.");
+    if (value < node.data) node.left = this.insert(value, node.left);
+    else {
+      node.right = this.insert(value, node.right);
+    }
+    return node;
   }
 
-  find(value) {
-    // Return node with given value
+  delete(value, node = this.root) {
+    if (node == null) return null;
+    // If the value is found
+    if (value == node.data) {
+      // Has no sub-trees
+      if (node.right == null && node.left == null) return null;
+      // Has two sub-trees
+      else if (node.right != null && node.left != null) {
+        // In order traverse function
+        function traverse(root, array = []) {
+          if (root == null) return null;
+          traverse(root.left, array);
+          array.push(root.data);
+          traverse(root.right, array);
+          return array;
+        }
+        let traversalArray = traverse(node);
+        let successor;
+        // Find nearest value inside the array
+        for (let i = 0; i < traversalArray.length; i++) {
+          if (traversalArray[i] < value) continue;
+          if (traversalArray[i] == value) successor = traversalArray[i + 1];
+        }
+        this.delete(successor);
+        node.data = successor;
+      }
+      // Has a single right sub-tree
+      else if (node.right != null) node = node.right;
+      // Has a single left sub-tree
+      else if (node.left != null) node = node.left;
+    }
+
+    if (value < node.data) node.left = this.delete(value, node.left);
+    if (value > node.data) node.right = this.delete(value, node.right);
+    return node;
+  }
+
+  print() {
+    prettyPrint(this.root);
   }
 }
 
 const unsortedArray = [
-  113, 171, 49, 136, 81, 64, 48, 191, 34, 172, 200, 4, 72, 185,
+  5, 20, 15, 2, 3, 6, 19, 7, 24, 28, 39, 12, 11, 17, 24, 30,
 ];
 const tree = new Tree(unsortedArray);
-console.time("Time: ");
 tree.buildTree();
-console.timeEnd("Time: ");
-tree.insert("f");
+tree.print();
 
 //
 //
@@ -92,10 +143,12 @@ function prettyPrint(node, prefix = "", isLeft = true) {
 }
 
 // Merge sort algorithm from previous section
-function sort(array) {
+function mergeSort(array) {
   if (array.length <= 1) return array;
-  let leftHalf = sort(array.slice(0, Math.floor(array.length / 2)));
-  let rightHalf = sort(array.slice(Math.floor(array.length / 2), array.length));
+  let leftHalf = mergeSort(array.slice(0, Math.floor(array.length / 2)));
+  let rightHalf = mergeSort(
+    array.slice(Math.floor(array.length / 2), array.length)
+  );
   return merge(leftHalf, rightHalf);
 }
 
