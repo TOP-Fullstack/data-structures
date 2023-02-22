@@ -1,3 +1,6 @@
+const mergeSort = require("./helpers/mergeSort");
+const prettyPrint = require("./helpers/prettyPrint");
+
 class Node {
   constructor(value) {
     this.value = value;
@@ -12,8 +15,8 @@ class Tree {
     this.root = null;
   }
 
-  cleanArray(array) {
-    return [...new Set(mergeSort(array))];
+  cleanArray() {
+    return [...new Set(mergeSort(this.array))];
   }
 
   arrayToBST(arr, start, end) {
@@ -28,11 +31,11 @@ class Tree {
   }
 
   buildTree() {
-    this.array = this.cleanArray(this.array);
+    this.array = this.cleanArray();
     this.root = this.arrayToBST(this.array, 0, this.array.length - 1);
   }
 
-  insert(value) {
+  insert(value, node = this.root) {
     if (node == null) return new Node(value);
     if (node.value == value)
       return console.log("Number already in use. No duplicates please.");
@@ -76,7 +79,7 @@ class Tree {
   }
 
   // Accept a value and print the node with the given value
-  find(value) {
+  find(value, node = this.root) {
     if (node == null) return console.log("Value not found");
     if (value < node.value) node = this.find(value, node.left);
     else if (value > node.value) node = this.find(value, node.right);
@@ -85,6 +88,7 @@ class Tree {
     }
   }
 
+  // Breadth-first traversal of tree from root node
   levelOrder(node) {
     if (node == null) return;
     const queue = [];
@@ -98,28 +102,32 @@ class Tree {
     }
   }
 
-  inorder(node) {
+  // Tweaked the traversals so they return an array instead
+  inorder(node = this.root, array = []) {
     if (node != null) {
-      this.inorder(node.left);
-      console.log(node.value);
-      this.inorder(node.right);
+      this.inorder(node.left, array);
+      array.push(node.value);
+      this.inorder(node.right, array);
     }
+    return array;
   }
 
-  preorder(node) {
+  preorder(node = this.root, array = []) {
     if (node != null) {
-      console.log(node.value);
-      this.preorder(node.left);
-      this.preorder(node.right);
+      array.push(node.value);
+      this.preorder(node.left, array);
+      this.preorder(node.right, array);
     }
+    return array;
   }
 
-  postorder(node) {
+  postorder(node = this.root, array = []) {
     if (node != null) {
-      this.postorder(node.left);
-      this.postorder(node.right);
-      console.log(node.value);
+      this.postorder(node.left, array);
+      this.postorder(node.right, array);
+      array.push(node.value);
     }
+    return array;
   }
 
   // Return height of node (longest path from given node to leaf node)
@@ -132,94 +140,33 @@ class Tree {
     }
   }
 
+  // Return the number of edges from node to tree's root
+  depth(node, root = this.root) {
+    if (node == null) return console.log("Node not found");
+    if (node.value == root.value) return 0;
+    if (node.value < root.value) root = root.left;
+    else root = root.right;
+    return this.depth(node, root) + 1;
+  }
+
+  isBalanced(root = this.root) {
+    if (root == null) return null;
+    let difference =
+      Math.abs(this.height(root.left) - this.height(root.right)) <= 1;
+    this.isBalanced(root.left);
+    this.isBalanced(root.right);
+    return difference;
+  }
+
+  // Rebalance unbalanced tree
+  rebalance() {
+    this.array = this.inorder(this.root);
+    this.root = this.arrayToBST(this.array, 0, this.array.length - 1);
+  }
+
   print() {
     prettyPrint(this.root);
   }
 }
 
-const unsortedArray = [
-  5, 20, 15, 2, 3, 6, 19, 7, 24, 28, 39, 12, 11, 17, 24, 30,
-];
-const tree = new Tree(unsortedArray);
-tree.buildTree();
-const treeRoot = tree.root;
-tree.print(treeRoot);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-// Helper functions below
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-// Code provided by odin to print the tree to the console
-function prettyPrint(node, prefix = "", isLeft = true) {
-  if (node.right !== null) {
-    prettyPrint(node.right, `${prefix}${isLeft ? "│   " : "    "}`, false);
-  }
-  console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.value}`);
-  if (node.left !== null) {
-    prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
-  }
-}
-
-// Merge sort algorithm from previous section
-function mergeSort(array) {
-  if (array.length <= 1) return array;
-  let leftHalf = mergeSort(array.slice(0, Math.floor(array.length / 2)));
-  let rightHalf = mergeSort(
-    array.slice(Math.floor(array.length / 2), array.length)
-  );
-  return merge(leftHalf, rightHalf);
-}
-
-function merge(leftHalf, rightHalf) {
-  let a = 0,
-    b = 0,
-    c = [],
-    totalLength = leftHalf.length + rightHalf.length;
-
-  for (let counter = 0; counter < totalLength; counter++) {
-    if (a == leftHalf.length) {
-      for (let k = b; k < rightHalf.length; k++) {
-        c.push(rightHalf[k]);
-      }
-      return c;
-    }
-
-    if (b == rightHalf.length) {
-      for (let k = a; k < leftHalf.length; k++) {
-        c.push(leftHalf[k]);
-      }
-      return c;
-    }
-
-    if (leftHalf[a] < rightHalf[b]) {
-      c.push(leftHalf[a]);
-      a++;
-    } else {
-      c.push(rightHalf[b]);
-      b++;
-    }
-  }
-  return c;
-}
+module.exports = Tree;
