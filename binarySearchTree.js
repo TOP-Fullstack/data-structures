@@ -1,18 +1,6 @@
-/*
-To-do:
-- 
-- Find function
-- Level Order
-- preorder, inorder, postorder traversal
-- Height Function
-- Depth
-- isBalance
-- reBalance
-*/
-
 class Node {
-  constructor(data) {
-    this.data = data;
+  constructor(value) {
+    this.value = value;
     this.left = null;
     this.right = null;
   }
@@ -44,47 +32,104 @@ class Tree {
     this.root = this.arrayToBST(this.array, 0, this.array.length - 1);
   }
 
-  insert(value, node = this.root) {
+  insert(value) {
     if (node == null) return new Node(value);
-    if (node.data == value)
+    if (node.value == value)
       return console.log("Number already in use. No duplicates please.");
-    if (value < node.data) node.left = this.insert(value, node.left);
+    if (value < node.value) node.left = this.insert(value, node.left);
     else {
       node.right = this.insert(value, node.right);
     }
     return node;
   }
 
-  delete(value, root = this.root) {
-    if (root == null) return root;
+  delete(value, node) {
+    if (node == null) return node;
 
-    // If value is below current node's data, recurse either to the right or left
-    if (value < root.data) root.left = this.delete(value, root.left);
-    else if (value > root.data) root.right = this.delete(value, root.right);
+    // If value is below current node's value, recurse either to the right or left
+    if (value < node.value) node.left = this.delete(value, node.left);
+    else if (value > node.value) node.right = this.delete(value, node.right);
     else {
       // If single branches found, return that branch
-      if (root.left == null) return root.right;
-      else if (root.right == null) return root.left;
+      if (node.left == null) return node.right;
+      else if (node.right == null) return node.left;
 
       // Go to the right sub tree, traverse down the left side of that
       // until you reach the end (successor value)
-      root.data = this.minValue(root.right);
+      node.value = this.minValue(node.right);
 
       // Traverse the right subtree of the found node, this time
       // set the value to be deleted as the successor value
-      root.right = this.delete(root.data, root.right);
+      node.right = this.delete(node.value, node.right);
     }
-    return root;
+    return node;
   }
 
-  // The successor value is always in the right-side branch, then as far left as you can go
-  minValue(root) {
-    let minv = root.data;
-    while (root.left != null) {
-      minv = root.left.data;
-      root = root.left;
+  // Find the successor value to a node by going down it's left sub-trees
+  minValue(node) {
+    let minv = node.value;
+    while (node.left != null) {
+      minv = node.left.value;
+      node = node.left;
     }
     return minv;
+  }
+
+  // Accept a value and print the node with the given value
+  find(value) {
+    if (node == null) return console.log("Value not found");
+    if (value < node.value) node = this.find(value, node.left);
+    else if (value > node.value) node = this.find(value, node.right);
+    else {
+      console.log(node);
+    }
+  }
+
+  levelOrder(node) {
+    if (node == null) return;
+    const queue = [];
+    queue.push(node);
+    while (queue.length != 0) {
+      let current = queue[0];
+      console.log(current.value);
+      if (current.left != null) queue.push(current.left);
+      if (current.right != null) queue.push(current.right);
+      queue.shift();
+    }
+  }
+
+  inorder(node) {
+    if (node != null) {
+      this.inorder(node.left);
+      console.log(node.value);
+      this.inorder(node.right);
+    }
+  }
+
+  preorder(node) {
+    if (node != null) {
+      console.log(node.value);
+      this.preorder(node.left);
+      this.preorder(node.right);
+    }
+  }
+
+  postorder(node) {
+    if (node != null) {
+      this.postorder(node.left);
+      this.postorder(node.right);
+      console.log(node.value);
+    }
+  }
+
+  // Return height of node (longest path from given node to leaf node)
+  height(node) {
+    if (node == null) return 0;
+    else {
+      let leftHeight = this.height(node.left);
+      let rightHeight = this.height(node.right);
+      return Math.max(leftHeight, rightHeight) + 1;
+    }
   }
 
   print() {
@@ -97,9 +142,8 @@ const unsortedArray = [
 ];
 const tree = new Tree(unsortedArray);
 tree.buildTree();
-// tree.delete(39);
-tree.print();
-
+const treeRoot = tree.root;
+tree.print(treeRoot);
 //
 //
 //
@@ -132,7 +176,7 @@ function prettyPrint(node, prefix = "", isLeft = true) {
   if (node.right !== null) {
     prettyPrint(node.right, `${prefix}${isLeft ? "│   " : "    "}`, false);
   }
-  console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.data}`);
+  console.log(`${prefix}${isLeft ? "└── " : "┌── "}${node.value}`);
   if (node.left !== null) {
     prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
   }
