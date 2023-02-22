@@ -23,8 +23,8 @@ class Tree {
     if (start > end) {
       return null;
     }
-    let mid = parseInt((start + end) / 2);
-    let node = new Node(arr[mid]);
+    const mid = parseInt((start + end) / 2);
+    const node = new Node(arr[mid]);
     node.left = this.arrayToBST(arr, start, mid - 1);
     node.right = this.arrayToBST(arr, mid + 1, end);
     return node;
@@ -46,7 +46,7 @@ class Tree {
     return node;
   }
 
-  delete(value, node) {
+  delete(value, node = this.root) {
     if (node == null) return node;
 
     // If value is below current node's value, recurse either to the right or left
@@ -89,16 +89,15 @@ class Tree {
   }
 
   // Breadth-first traversal of tree from root node
-  levelOrder(node) {
+  levelOrder(node = this.root) {
     if (node == null) return;
     const queue = [];
     queue.push(node);
     while (queue.length != 0) {
-      let current = queue[0];
+      let current = queue.shift();
       console.log(current.value);
       if (current.left != null) queue.push(current.left);
       if (current.right != null) queue.push(current.right);
-      queue.shift();
     }
   }
 
@@ -153,6 +152,7 @@ class Tree {
     if (root == null) return null;
     let difference =
       Math.abs(this.height(root.left) - this.height(root.right)) <= 1;
+    if (!difference) return false;
     this.isBalanced(root.left);
     this.isBalanced(root.right);
     return difference;
